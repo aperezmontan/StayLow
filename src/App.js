@@ -9,7 +9,7 @@ StayLow.cable = ActionCable.createConsumer('ws://localhost:8080/cable')
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state = { order: null };
+    this.state = { order: null, called: 0 };
   }
 
   render() {
@@ -20,7 +20,10 @@ class App extends Component {
           <h1 className="App-title">Orders</h1>
         </header>
         <p className="App-intro">
-          { this.state.orders }
+          Called: {this.state.called}
+        </p>
+        <p className="App-intro">
+          Newest Order Label: {this.state.order ? this.state.order.label : 'none'}
         </p>
       </div>
     );
@@ -34,6 +37,8 @@ class App extends Component {
     StayLow.orders = StayLow.cable.subscriptions.create("OrderChannel", {
       connected: function () {
         console.log('connected')
+        setTimeout(() => this.perform('subscribed'), 1000);
+        console.log('subscribed')
       },
       received: function (data) {
         this.updateOrderList(data.order);
@@ -44,7 +49,8 @@ class App extends Component {
 
   updateOrderList(order) {
     let parsed_order = JSON.parse(order);
-    this.setState({ order: parsed_order });
+    let newCalled = this.state.called + 1
+    this.setState({ order: parsed_order, called: newCalled });
   }
 }
 
